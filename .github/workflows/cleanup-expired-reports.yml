@@ -1,0 +1,35 @@
+name: Cleanup Expired Reports
+
+on:
+  schedule:
+    # 매시간 17분에 실행 (UTC)
+    - cron: '17 * * * *'
+  workflow_dispatch: # 수동 실행 가능
+
+jobs:
+  cleanup:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Cleanup expired reports
+        run: |
+          python .github/scripts/cleanup_reports.py
+
+      - name: Commit and push changes
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add -A
+          git diff --cached --quiet && echo "No expired reports to clean up." && exit 0
+          git commit -m "Auto-cleanup: remove expired reports"
+          git push
