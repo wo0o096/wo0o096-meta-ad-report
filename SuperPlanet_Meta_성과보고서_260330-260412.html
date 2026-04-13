@@ -92,6 +92,28 @@ async function checkPw(){var v=document.getElementById("pw-input").value;var h=a
 document.addEventListener("keydown",function(e){if(e.key==="Enter"&&document.getElementById("pw-gate"))checkPw()});
 </script>
 
+<div id="pw-gate" style="position:fixed;inset:0;z-index:99999;background:#1a1a2e;display:flex;align-items:center;justify-content:center;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif">
+  <div style="background:#16213e;border-radius:16px;padding:48px 40px;box-shadow:0 8px 32px rgba(0,0,0,.4);text-align:center;max-width:380px;width:90%">
+    <div style="font-size:48px;margin-bottom:16px">&#x1F512;</div>
+    <h2 style="color:#e2e8f0;margin:0 0 8px;font-size:20px">보고서 열람</h2>
+    <p style="color:#94a3b8;margin:0 0 24px;font-size:14px">비밀번호를 입력하세요</p>
+    <input id="pw-input" type="password" placeholder="Password"
+      style="width:100%;padding:12px 16px;border:2px solid #334155;border-radius:8px;background:#0f172a;color:#e2e8f0;font-size:16px;outline:none;box-sizing:border-box;transition:border .2s"
+      onfocus="this.style.borderColor='#3b82f6'" onblur="this.style.borderColor='#334155'">
+    <p id="pw-err" style="color:#ef4444;margin:8px 0 0;font-size:13px;min-height:20px"></p>
+    <button onclick="checkPw()"
+      style="margin-top:16px;width:100%;padding:12px;background:#3b82f6;color:#fff;border:none;border-radius:8px;font-size:15px;font-weight:600;cursor:pointer;transition:background .2s"
+      onmouseover="this.style.background='#2563eb'" onmouseout="this.style.background='#3b82f6'">확인</button>
+  </div>
+</div>
+<style>#pw-gate~*:not(script){display:none!important}</style>
+<script>
+var PW_HASH="50988484283c4e3845212a75b4614d6bef2381d69eada31465b5a020f9ceb723";
+async function sha256(m){var e=new TextEncoder().encode(m);var h=await crypto.subtle.digest("SHA-256",e);return Array.from(new Uint8Array(h)).map(b=>b.toString(16).padStart(2,"0")).join("")}
+async function checkPw(){var v=document.getElementById("pw-input").value;var h=await sha256(v);if(h===PW_HASH){document.getElementById("pw-gate").remove();document.querySelectorAll("style").forEach(s=>{if(s.textContent.includes("pw-gate"))s.remove()})}else{document.getElementById("pw-err").textContent="비밀번호가 올바르지 않습니다."}}
+document.addEventListener("keydown",function(e){if(e.key==="Enter"&&document.getElementById("pw-gate"))checkPw()});
+</script>
+
 <div class="hdr">
   <h1>SuperPlanet Meta 소재 성과 보고서</h1>
   <div class="sub">소재별 성과 분석 | 내부 공유용</div>
