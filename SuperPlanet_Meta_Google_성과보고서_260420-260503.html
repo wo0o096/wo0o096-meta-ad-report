@@ -1,0 +1,205 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>SuperPlanet 광고 소재 성과 보고서</title>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+<style>
+
+:root { --p:#1a73e8; --pl:#e8f0fe; --s:#34a853; --w:#fbbc04; --d:#ea4335; --bg:#f8f9fa; --c:#fff; --t:#202124; --ts:#5f6368; --b:#dadce0; }
+* { margin:0; padding:0; box-sizing:border-box; }
+body { font-family:'Segoe UI',-apple-system,'Noto Sans KR',sans-serif; background:var(--bg); color:var(--t); line-height:1.6; }
+.hdr { background:linear-gradient(135deg,#1a73e8,#4285f4,#669df6); color:#fff; padding:32px 0; text-align:center; }
+.hdr h1 { font-size:24px; font-weight:700; margin-bottom:4px; }
+.hdr .sub { font-size:14px; opacity:.85; }
+.hdr .per { display:inline-block; background:rgba(255,255,255,.18); padding:4px 14px; border-radius:16px; margin-top:8px; font-size:12px; }
+.ctn { max-width:1200px; margin:0 auto; padding:16px; }
+.tabs { display:flex; gap:0; background:var(--c); border-radius:10px 10px 0 0; box-shadow:0 1px 3px rgba(0,0,0,.08); overflow-x:auto; margin-top:16px; }
+.tab-btn { flex:1; min-width:130px; padding:10px 8px; border:none; background:none; cursor:pointer; font-size:12px; font-weight:600; color:var(--ts); border-bottom:3px solid transparent; transition:all .2s; white-space:pre-line; line-height:1.35; text-align:center; }
+.tab-btn:hover { background:var(--pl); color:var(--p); }
+.tab-btn.active { color:var(--p); border-bottom-color:var(--p); background:var(--pl); }
+.tab-pane { display:none; background:var(--c); border-radius:0 0 10px 10px; padding:20px; box-shadow:0 1px 3px rgba(0,0,0,.08); }
+.tab-pane.active { display:block; }
+.metrics { display:grid; grid-template-columns:repeat(auto-fit,minmax(140px,1fr)); gap:10px; margin-bottom:20px; }
+.mc { background:var(--bg); border-radius:8px; padding:14px; text-align:center; border-left:3px solid var(--p); }
+.mc .ml { font-size:11px; color:var(--ts); margin-bottom:2px; }
+.mc .mv { font-size:20px; font-weight:700; color:var(--t); }
+.mc .ms { font-size:10px; color:var(--ts); }
+.charts-row { display:grid; grid-template-columns:1.5fr 1fr 1fr; gap:14px; margin-bottom:20px; }
+.chart-box { background:var(--bg); border-radius:8px; padding:12px; position:relative; min-height:280px; }
+.chart-box canvas { width:100% !important; height:100% !important; }
+@media(max-width:900px) { .charts-row { grid-template-columns:1fr; } }
+.analysis-grid { display:grid; grid-template-columns:1fr 1fr; gap:14px; margin-bottom:20px; }
+.analysis-card { background:var(--bg); border-radius:8px; padding:14px; }
+.analysis-card h4 { font-size:13px; color:var(--ts); margin-bottom:8px; padding-bottom:4px; border-bottom:1px solid var(--b); }
+.mini-table { width:100%; border-collapse:collapse; font-size:12px; }
+.mini-table th, .mini-table td { padding:5px 6px; text-align:right; border-bottom:1px solid var(--b); }
+.mini-table th { font-weight:600; color:var(--ts); font-size:11px; }
+.mini-table td:first-child, .mini-table th:first-child { text-align:left; }
+@media(max-width:768px) { .analysis-grid { grid-template-columns:1fr; } }
+.sec-title { font-size:15px; font-weight:700; color:var(--t); margin:20px 0 10px; padding-bottom:6px; border-bottom:2px solid var(--pl); }
+.ct-wrap { overflow-x:auto; margin-bottom:20px; }
+table.ct { width:100%; border-collapse:collapse; font-size:12px; }
+table.ct th { background:var(--p); color:#fff; padding:8px 6px; text-align:left; position:sticky; top:0; font-size:11px; white-space:nowrap; }
+table.ct td { padding:7px 6px; border-bottom:1px solid var(--b); }
+table.ct tr:hover { background:var(--pl); }
+table.ct .num { text-align:right; font-variant-numeric:tabular-nums; white-space:nowrap; }
+table.ct .ad-name { font-size:11px; max-width:320px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+table.ct .rank { text-align:center; font-weight:700; color:var(--p); width:30px; }
+.tag { display:inline-block; padding:1px 7px; border-radius:8px; font-size:10px; font-weight:600; }
+.tag-img { background:#e3f2fd; color:#1565c0; }
+.tag-vid { background:#fce4ec; color:#c62828; }
+.tag-dyn { background:#fff8e1; color:#f57f17; }
+.tag-carousel { background:#fff3e0; color:#e65100; }
+.tag-other { background:#f5f5f5; color:#616161; }
+.tag-ios { background:#e8f5e9; color:#2e7d32; }
+.tag-aos { background:#fff3e0; color:#e65100; }
+.tag-unk { background:#f5f5f5; color:#616161; }
+.roas-high { color:var(--s); font-weight:700; }
+.roas-mid { color:#e8a800; font-weight:600; }
+.roas-low { color:var(--d); }
+.badge-top { display:inline-block; width:22px; height:22px; line-height:22px; text-align:center; border-radius:50%; font-size:10px; font-weight:700; color:#fff; }
+.badge-1 { background:linear-gradient(135deg,#ffd700,#ffb300); }
+.badge-2 { background:linear-gradient(135deg,#b0bec5,#78909c); }
+.badge-3 { background:linear-gradient(135deg,#a1887f,#795548); }
+.badge-n { background:#e0e0e0; color:var(--ts); }
+.ft { text-align:center; padding:20px; color:var(--ts); font-size:11px; margin-top:16px; }
+.no-data { text-align:center; color:var(--ts); font-style:italic; padding:20px; font-size:13px; }
+.budget-section { background:var(--bg); border-radius:8px; padding:16px; margin-bottom:20px; }
+.budget-textarea { width:100%; min-height:140px; padding:12px 14px; border:1px solid var(--b); border-left:3px solid var(--p); border-radius:4px; background:var(--c); color:var(--t); font-family:inherit; font-size:13px; line-height:1.7; resize:vertical; outline:none; box-sizing:border-box; }
+.budget-textarea:focus { border-color:var(--p); box-shadow:0 0 0 2px var(--pl); }
+.budget-textarea::placeholder { color:var(--ts); font-style:italic; }
+.budget-hint { font-size:11px; color:var(--ts); margin-top:6px; text-align:right; }
+
+</style>
+</head>
+<body>
+<div id="pw-gate" style="position:fixed;inset:0;z-index:99999;background:#1a1a2e;display:flex;align-items:center;justify-content:center;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif">
+  <div style="background:#16213e;border-radius:16px;padding:48px 40px;box-shadow:0 8px 32px rgba(0,0,0,.4);text-align:center;max-width:380px;width:90%">
+    <div style="font-size:48px;margin-bottom:16px">&#x1F512;</div>
+    <h2 style="color:#e2e8f0;margin:0 0 8px;font-size:20px">보고서 열람</h2>
+    <p style="color:#94a3b8;margin:0 0 24px;font-size:14px">비밀번호를 입력하세요</p>
+    <input id="pw-input" type="password" placeholder="Password"
+      style="width:100%;padding:12px 16px;border:2px solid #334155;border-radius:8px;background:#0f172a;color:#e2e8f0;font-size:16px;outline:none;box-sizing:border-box;transition:border .2s"
+      onfocus="this.style.borderColor='#3b82f6'" onblur="this.style.borderColor='#334155'">
+    <p id="pw-err" style="color:#ef4444;margin:8px 0 0;font-size:13px;min-height:20px"></p>
+    <button onclick="checkPw()"
+      style="margin-top:16px;width:100%;padding:12px;background:#3b82f6;color:#fff;border:none;border-radius:8px;font-size:15px;font-weight:600;cursor:pointer;transition:background .2s"
+      onmouseover="this.style.background='#2563eb'" onmouseout="this.style.background='#3b82f6'">확인</button>
+  </div>
+</div>
+<style>#pw-gate~*:not(script){display:none!important}</style>
+<script>
+var PW_HASH="50988484283c4e3845212a75b4614d6bef2381d69eada31465b5a020f9ceb723";
+async function sha256(m){var e=new TextEncoder().encode(m);var h=await crypto.subtle.digest("SHA-256",e);return Array.from(new Uint8Array(h)).map(b=>b.toString(16).padStart(2,"0")).join("")}
+async function checkPw(){var v=document.getElementById("pw-input").value;var h=await sha256(v);if(h===PW_HASH){document.getElementById("pw-gate").remove();document.querySelectorAll("style").forEach(s=>{if(s.textContent.includes("pw-gate"))s.remove()})}else{document.getElementById("pw-err").textContent="비밀번호가 올바르지 않습니다."}}
+document.addEventListener("keydown",function(e){if(e.key==="Enter"&&document.getElementById("pw-gate"))checkPw()});
+</script>
+
+<div class="hdr">
+  <h1>SuperPlanet 광고 소재 성과 보고서</h1>
+  <div class="sub">소재별 성과 분석 | 내부 공유용</div>
+  <div class="per">2026.04.20 (월) ~ 2026.05.03 (일) | W17-W18</div>
+</div>
+<div class="ctn">
+<div class="tabs">
+<button class="tab-btn active" onclick="showTab(0)" id="tab0">POMPO
+Meta</button>
+<button class="tab-btn" onclick="showTab(1)" id="tab1">POMPO
+Google</button>
+<button class="tab-btn" onclick="showTab(2)" id="tab2">갓슬레이어
+Meta</button>
+<button class="tab-btn" onclick="showTab(3)" id="tab3">갓슬레이어
+Google</button>
+<button class="tab-btn" onclick="showTab(4)" id="tab4">전우치 [사전예약]
+Meta</button>
+<button class="tab-btn" onclick="showTab(5)" id="tab5">전우치 [사전예약]
+Google</button>
+</div>
+<div class="tab-pane active" id="pane0"><div class="metrics"><div class="mc"><div class="ml">총 지출</div><div class="mv">280만</div><div class="ms">2,802,034원</div></div><div class="mc"><div class="ml">총 설치</div><div class="mv">621</div></div><div class="mc"><div class="ml">평균 CPI</div><div class="mv">4,512</div></div><div class="mc"><div class="ml">구매</div><div class="mv">90</div></div><div class="mc"><div class="ml">가중 ROAS</div><div class="mv roas-mid">0.54</div></div><div class="mc"><div class="ml">노출</div><div class="mv">51만</div></div><div class="mc"><div class="ml">운영 소재</div><div class="mv">2개</div><div class="ms">전체 2개</div></div></div><div class="charts-row"><div class="chart-box"><canvas id="bar_0"></canvas></div><div class="chart-box"><canvas id="type_0"></canvas></div><div class="chart-box"><canvas id="plat_0"></canvas></div></div><div class="analysis-grid"><div class="analysis-card"><h4>🎨 소재 유형별 성과</h4><table class="mini-table"><tr><th>유형</th><th>소재수</th><th>지출</th><th>설치</th><th>구매</th></tr><tr><td>영상</td><td class="num">2</td><td class="num">280만</td><td class="num">621</td><td class="num">90</td></tr></table></div><div class="analysis-card"><h4>📱 플랫폼별 성과</h4><table class="mini-table"><tr><th>플랫폼</th><th>소재수</th><th>지출</th><th>설치</th><th>구매</th></tr><tr><td>iOS</td><td class="num">2</td><td class="num">280만</td><td class="num">621</td><td class="num">90</td></tr></table></div></div><h3 class="sec-title">💰 Top 5 소재 (지출 기준)</h3><div class="ct-wrap"><table class="ct"><thead><tr><th class="rank">#</th><th>소재명</th><th>유형</th><th>플랫폼</th><th class="num">지출</th><th class="num">설치</th><th class="num">CPI</th><th class="num">ROAS</th><th class="num">노출</th><th class="num">구매</th></tr></thead><tbody><tr><td class="rank"><span class="badge-top badge-1">1</span></td><td class="ad-name" title="일본어_iOS_영상_스라아_세로_251201">일본어_iOS_영상_스라아_세로_251201</td><td><span class="tag tag-vid">영상</span></td><td><span class="tag tag-ios">iOS</span></td><td class="num">198만</td><td class="num">384</td><td class="num">5,145</td><td class="num roas-low">0.31</td><td class="num">356,599</td><td class="num">46</td></tr><tr><td class="rank"><span class="badge-top badge-2">2</span></td><td class="ad-name" title="모든언어_iOS_영상_스토어캡쳐_세로_251201">모든언어_iOS_영상_스토어캡쳐_세로_251201</td><td><span class="tag tag-vid">영상</span></td><td><span class="tag tag-ios">iOS</span></td><td class="num">83만</td><td class="num">237</td><td class="num">3,486</td><td class="num roas-high">1.09</td><td class="num">156,373</td><td class="num">44</td></tr></tbody></table></div><h3 class="sec-title">🏆 Best ROAS 소재 (지출 1만원 이상)</h3><div class="ct-wrap"><table class="ct"><thead><tr><th class="rank">#</th><th>소재명</th><th>유형</th><th>플랫폼</th><th class="num">ROAS</th><th class="num">지출</th><th class="num">설치</th><th class="num">구매</th></tr></thead><tbody><tr><td class="rank"><span class="badge-top badge-1">1</span></td><td class="ad-name" title="모든언어_iOS_영상_스토어캡쳐_세로_251201">모든언어_iOS_영상_스토어캡쳐_세로_251201</td><td><span class="tag tag-vid">영상</span></td><td><span class="tag tag-ios">iOS</span></td><td class="num roas-high">1.09</td><td class="num">83만</td><td class="num">237</td><td class="num">44</td></tr></tbody></table></div><h3 class="sec-title">⚡ Best CPI 효율 소재 (설치 발생 기준)</h3><div class="ct-wrap"><table class="ct"><thead><tr><th class="rank">#</th><th>소재명</th><th>유형</th><th>플랫폼</th><th class="num">CPI</th><th class="num">지출</th><th class="num">설치</th><th class="num">노출</th></tr></thead><tbody><tr><td class="rank"><span class="badge-top badge-1">1</span></td><td class="ad-name" title="모든언어_iOS_영상_스토어캡쳐_세로_251201">모든언어_iOS_영상_스토어캡쳐_세로_251201</td><td><span class="tag tag-vid">영상</span></td><td><span class="tag tag-ios">iOS</span></td><td class="num">3,486</td><td class="num">83만</td><td class="num">237</td><td class="num">156,373</td></tr><tr><td class="rank"><span class="badge-top badge-2">2</span></td><td class="ad-name" title="일본어_iOS_영상_스라아_세로_251201">일본어_iOS_영상_스라아_세로_251201</td><td><span class="tag tag-vid">영상</span></td><td><span class="tag tag-ios">iOS</span></td><td class="num">5,145</td><td class="num">198만</td><td class="num">384</td><td class="num">356,599</td></tr></tbody></table></div><h3 class="sec-title">📊 예산 플랜 코멘트</h3><div class="budget-section"><textarea class="budget-textarea" data-game-idx="0" placeholder="이 게임의 예산 플랜 코멘트를 작성하세요. 입력하면 브라우저에 자동 저장됩니다."></textarea><div class="budget-hint">💾 자동 저장 (이 브라우저에만 보관)</div></div></div><div class="tab-pane" id="pane1"><div class="metrics"><div class="mc"><div class="ml">총 지출</div><div class="mv">18만</div><div class="ms">184,881원</div></div><div class="mc"><div class="ml">총 설치</div><div class="mv">19</div></div><div class="mc"><div class="ml">평균 CPI</div><div class="mv">9,731</div></div><div class="mc"><div class="ml">구매</div><div class="mv">22</div></div><div class="mc"><div class="ml">가중 ROAS</div><div class="mv roas-low">0.31</div></div><div class="mc"><div class="ml">노출</div><div class="mv">1,350</div></div><div class="mc"><div class="ml">운영 소재</div><div class="mv">1개</div><div class="ms">전체 1개</div></div></div><div class="charts-row"><div class="chart-box"><canvas id="bar_1"></canvas></div><div class="chart-box"><canvas id="type_1"></canvas></div><div class="chart-box"><canvas id="plat_1"></canvas></div></div><div class="analysis-grid"><div class="analysis-card"><h4>🎨 소재 유형별 성과</h4><table class="mini-table"><tr><th>유형</th><th>소재수</th><th>지출</th><th>설치</th><th>구매</th></tr><tr><td>이미지</td><td class="num">1</td><td class="num">18만</td><td class="num">19</td><td class="num">22</td></tr></table></div><div class="analysis-card"><h4>📱 플랫폼별 성과</h4><table class="mini-table"><tr><th>플랫폼</th><th>소재수</th><th>지출</th><th>설치</th><th>구매</th></tr><tr><td>AOS</td><td class="num">1</td><td class="num">18만</td><td class="num">19</td><td class="num">22</td></tr></table></div></div><h3 class="sec-title">💰 Top 5 소재 (지출 기준)</h3><div class="ct-wrap"><table class="ct"><thead><tr><th class="rank">#</th><th>소재명</th><th>유형</th><th>플랫폼</th><th class="num">지출</th><th class="num">설치</th><th class="num">CPI</th><th class="num">ROAS</th><th class="num">노출</th><th class="num">구매</th></tr></thead><tbody><tr><td class="rank"><span class="badge-top badge-1">1</span></td><td class="ad-name" title="루나폼포_05_이니드">루나폼포_05_이니드</td><td><span class="tag tag-img">이미지</span></td><td><span class="tag tag-aos">AOS</span></td><td class="num">18만</td><td class="num">19</td><td class="num">9,731</td><td class="num roas-low">0.31</td><td class="num">1,350</td><td class="num">22</td></tr></tbody></table></div><h3 class="sec-title">📊 예산 플랜 코멘트</h3><div class="budget-section"><textarea class="budget-textarea" data-game-idx="1" placeholder="이 게임의 예산 플랜 코멘트를 작성하세요. 입력하면 브라우저에 자동 저장됩니다."></textarea><div class="budget-hint">💾 자동 저장 (이 브라우저에만 보관)</div></div></div><div class="tab-pane" id="pane2"><div class="metrics"><div class="mc"><div class="ml">총 지출</div><div class="mv">1,079만</div><div class="ms">10,790,518원</div></div><div class="mc"><div class="ml">총 설치</div><div class="mv">2,091</div></div><div class="mc"><div class="ml">평균 CPI</div><div class="mv">5,160</div></div><div class="mc"><div class="ml">구매</div><div class="mv">339</div></div><div class="mc"><div class="ml">가중 ROAS</div><div class="mv roas-low">0.33</div></div><div class="mc"><div class="ml">노출</div><div class="mv">126만</div></div><div class="mc"><div class="ml">운영 소재</div><div class="mv">9개</div><div class="ms">전체 9개</div></div></div><div class="charts-row"><div class="chart-box"><canvas id="bar_2"></canvas></div><div class="chart-box"><canvas id="type_2"></canvas></div><div class="chart-box"><canvas id="plat_2"></canvas></div></div><div class="analysis-grid"><div class="analysis-card"><h4>🎨 소재 유형별 성과</h4><table class="mini-table"><tr><th>유형</th><th>소재수</th><th>지출</th><th>설치</th><th>구매</th></tr><tr><td>이미지</td><td class="num">4</td><td class="num">514만</td><td class="num">851</td><td class="num">136</td></tr><tr><td>영상</td><td class="num">5</td><td class="num">565만</td><td class="num">1,240</td><td class="num">203</td></tr></table></div><div class="analysis-card"><h4>📱 플랫폼별 성과</h4><table class="mini-table"><tr><th>플랫폼</th><th>소재수</th><th>지출</th><th>설치</th><th>구매</th></tr><tr><td>AOS</td><td class="num">4</td><td class="num">511만</td><td class="num">572</td><td class="num">113</td></tr><tr><td>iOS</td><td class="num">5</td><td class="num">568만</td><td class="num">1,519</td><td class="num">226</td></tr></table></div></div><h3 class="sec-title">💰 Top 5 소재 (지출 기준)</h3><div class="ct-wrap"><table class="ct"><thead><tr><th class="rank">#</th><th>소재명</th><th>유형</th><th>플랫폼</th><th class="num">지출</th><th class="num">설치</th><th class="num">CPI</th><th class="num">ROAS</th><th class="num">노출</th><th class="num">구매</th></tr></thead><tbody><tr><td class="rank"><span class="badge-top badge-1">1</span></td><td class="ad-name" title="모든언어_iOS_이미지_앱아이콘_정방_260424">모든언어_iOS_이미지_앱아이콘_정방_260424</td><td><span class="tag tag-img">이미지</span></td><td><span class="tag tag-ios">iOS</span></td><td class="num">284만</td><td class="num">646</td><td class="num">4,390</td><td class="num roas-low">0.23</td><td class="num">353,697</td><td class="num">76</td></tr><tr><td class="rank"><span class="badge-top badge-2">2</span></td><td class="ad-name" title="모든언어_AOS_영상_로봇TTS_세로_260309">모든언어_AOS_영상_로봇TTS_세로_260309</td><td><span class="tag tag-vid">영상</span></td><td><span class="tag tag-aos">AOS</span></td><td class="num">212만</td><td class="num">284</td><td class="num">7,479</td><td class="num roas-low">0.30</td><td class="num">143,669</td><td class="num">46</td></tr><tr><td class="rank"><span class="badge-top badge-3">3</span></td><td class="ad-name" title="모든언어_AOS_이미지_앱아이콘_정방_260424">모든언어_AOS_이미지_앱아이콘_정방_260424</td><td><span class="tag tag-img">이미지</span></td><td><span class="tag tag-aos">AOS</span></td><td class="num">162만</td><td class="num">158</td><td class="num">1만</td><td class="num roas-low">0.30</td><td class="num">90,829</td><td class="num">38</td></tr><tr><td class="rank"><span class="badge-top badge-n">4</span></td><td class="ad-name" title="모든언어_iOS_영상_TTS 페이크_세로_251224">모든언어_iOS_영상_TTS 페이크_세로_251224</td><td><span class="tag tag-vid">영상</span></td><td><span class="tag tag-ios">iOS</span></td><td class="num">135만</td><td class="num">269</td><td class="num">5,036</td><td class="num roas-low">0.43</td><td class="num">172,057</td><td class="num">61</td></tr><tr><td class="rank"><span class="badge-top badge-n">5</span></td><td class="ad-name" title="모든언어_AOS_영상_TTS페이크_세로_251224">모든언어_AOS_영상_TTS페이크_세로_251224</td><td><span class="tag tag-vid">영상</span></td><td><span class="tag tag-aos">AOS</span></td><td class="num">100만</td><td class="num">109</td><td class="num">9,159</td><td class="num roas-low">0.32</td><td class="num">63,469</td><td class="num">27</td></tr></tbody></table></div><h3 class="sec-title">🏆 Best ROAS 소재 (지출 1만원 이상)</h3><div class="ct-wrap"><table class="ct"><thead><tr><th class="rank">#</th><th>소재명</th><th>유형</th><th>플랫폼</th><th class="num">ROAS</th><th class="num">지출</th><th class="num">설치</th><th class="num">구매</th></tr></thead><tbody><tr><td class="rank"><span class="badge-top badge-1">1</span></td><td class="ad-name" title="모든언어_iOS_영상_로봇TTS_세로_260309">모든언어_iOS_영상_로봇TTS_세로_260309</td><td><span class="tag tag-vid">영상</span></td><td><span class="tag tag-ios">iOS</span></td><td class="num roas-mid">0.60</td><td class="num">34만</td><td class="num">153</td><td class="num">22</td></tr><tr><td class="rank"><span class="badge-top badge-2">2</span></td><td class="ad-name" title="모든언어_iOS_영상_PV_세로_251224">모든언어_iOS_영상_PV_세로_251224</td><td><span class="tag tag-vid">영상</span></td><td><span class="tag tag-ios">iOS</span></td><td class="num roas-mid">0.51</td><td class="num">84만</td><td class="num">425</td><td class="num">47</td></tr></tbody></table></div><h3 class="sec-title">⚡ Best CPI 효율 소재 (설치 발생 기준)</h3><div class="ct-wrap"><table class="ct"><thead><tr><th class="rank">#</th><th>소재명</th><th>유형</th><th>플랫폼</th><th class="num">CPI</th><th class="num">지출</th><th class="num">설치</th><th class="num">노출</th></tr></thead><tbody><tr><td class="rank"><span class="badge-top badge-1">1</span></td><td class="ad-name" title="모든언어_iOS_영상_PV_세로_251224">모든언어_iOS_영상_PV_세로_251224</td><td><span class="tag tag-vid">영상</span></td><td><span class="tag tag-ios">iOS</span></td><td class="num">1,970</td><td class="num">84만</td><td class="num">425</td><td class="num">311,255</td></tr><tr><td class="rank"><span class="badge-top badge-2">2</span></td><td class="ad-name" title="모든언어_iOS_영상_로봇TTS_세로_260309">모든언어_iOS_영상_로봇TTS_세로_260309</td><td><span class="tag tag-vid">영상</span></td><td><span class="tag tag-ios">iOS</span></td><td class="num">2,207</td><td class="num">34만</td><td class="num">153</td><td class="num">86,144</td></tr><tr><td class="rank"><span class="badge-top badge-3">3</span></td><td class="ad-name" title="모든언어_iOS_이미지_앱아이콘_정방_260424">모든언어_iOS_이미지_앱아이콘_정방_260424</td><td><span class="tag tag-img">이미지</span></td><td><span class="tag tag-ios">iOS</span></td><td class="num">4,390</td><td class="num">284만</td><td class="num">646</td><td class="num">353,697</td></tr><tr><td class="rank"><span class="badge-top badge-n">4</span></td><td class="ad-name" title="모든언어_iOS_영상_TTS 페이크_세로_251224">모든언어_iOS_영상_TTS 페이크_세로_251224</td><td><span class="tag tag-vid">영상</span></td><td><span class="tag tag-ios">iOS</span></td><td class="num">5,036</td><td class="num">135만</td><td class="num">269</td><td class="num">172,057</td></tr><tr><td class="rank"><span class="badge-top badge-n">5</span></td><td class="ad-name" title="모든언어_AOS_영상_로봇TTS_세로_260309">모든언어_AOS_영상_로봇TTS_세로_260309</td><td><span class="tag tag-vid">영상</span></td><td><span class="tag tag-aos">AOS</span></td><td class="num">7,479</td><td class="num">212만</td><td class="num">284</td><td class="num">143,669</td></tr><tr><td class="rank"><span class="badge-top badge-n">6</span></td><td class="ad-name" title="모든언어_AOS_영상_TTS페이크_세로_251224">모든언어_AOS_영상_TTS페이크_세로_251224</td><td><span class="tag tag-vid">영상</span></td><td><span class="tag tag-aos">AOS</span></td><td class="num">9,159</td><td class="num">100만</td><td class="num">109</td><td class="num">63,469</td></tr><tr><td class="rank"><span class="badge-top badge-n">7</span></td><td class="ad-name" title="모든언어_AOS_이미지_앱아이콘_정방_260424">모든언어_AOS_이미지_앱아이콘_정방_260424</td><td><span class="tag tag-img">이미지</span></td><td><span class="tag tag-aos">AOS</span></td><td class="num">1만</td><td class="num">162만</td><td class="num">158</td><td class="num">90,829</td></tr></tbody></table></div><h3 class="sec-title">📊 예산 플랜 코멘트</h3><div class="budget-section"><textarea class="budget-textarea" data-game-idx="2" placeholder="이 게임의 예산 플랜 코멘트를 작성하세요. 입력하면 브라우저에 자동 저장됩니다."></textarea><div class="budget-hint">💾 자동 저장 (이 브라우저에만 보관)</div></div></div><div class="tab-pane" id="pane3"><div class="metrics"><div class="mc"><div class="ml">총 지출</div><div class="mv">21만</div><div class="ms">214,233원</div></div><div class="mc"><div class="ml">총 설치</div><div class="mv">114</div></div><div class="mc"><div class="ml">평균 CPI</div><div class="mv">1,879</div></div><div class="mc"><div class="ml">구매</div><div class="mv">154</div></div><div class="mc"><div class="ml">가중 ROAS</div><div class="mv roas-low">0.03</div></div><div class="mc"><div class="ml">노출</div><div class="mv">3만</div></div><div class="mc"><div class="ml">운영 소재</div><div class="mv">1개</div><div class="ms">전체 1개</div></div></div><div class="charts-row"><div class="chart-box"><canvas id="bar_3"></canvas></div><div class="chart-box"><canvas id="type_3"></canvas></div><div class="chart-box"><canvas id="plat_3"></canvas></div></div><div class="analysis-grid"><div class="analysis-card"><h4>🎨 소재 유형별 성과</h4><table class="mini-table"><tr><th>유형</th><th>소재수</th><th>지출</th><th>설치</th><th>구매</th></tr><tr><td>영상</td><td class="num">1</td><td class="num">21만</td><td class="num">114</td><td class="num">154</td></tr></table></div><div class="analysis-card"><h4>📱 플랫폼별 성과</h4><table class="mini-table"><tr><th>플랫폼</th><th>소재수</th><th>지출</th><th>설치</th><th>구매</th></tr><tr><td>AOS</td><td class="num">1</td><td class="num">21만</td><td class="num">114</td><td class="num">154</td></tr></table></div></div><h3 class="sec-title">💰 Top 5 소재 (지출 기준)</h3><div class="ct-wrap"><table class="ct"><thead><tr><th class="rank">#</th><th>소재명</th><th>유형</th><th>플랫폼</th><th class="num">지출</th><th class="num">설치</th><th class="num">CPI</th><th class="num">ROAS</th><th class="num">노출</th><th class="num">구매</th></tr></thead><tbody><tr><td class="rank"><span class="badge-top badge-1">1</span></td><td class="ad-name" title="TTS 로봇 세로형">TTS 로봇 세로형</td><td><span class="tag tag-vid">영상</span></td><td><span class="tag tag-aos">AOS</span></td><td class="num">21만</td><td class="num">114</td><td class="num">1,879</td><td class="num roas-low">0.03</td><td class="num">32,631</td><td class="num">154</td></tr></tbody></table></div><h3 class="sec-title">📊 예산 플랜 코멘트</h3><div class="budget-section"><textarea class="budget-textarea" data-game-idx="3" placeholder="이 게임의 예산 플랜 코멘트를 작성하세요. 입력하면 브라우저에 자동 저장됩니다."></textarea><div class="budget-hint">💾 자동 저장 (이 브라우저에만 보관)</div></div></div><div class="tab-pane" id="pane4"><div class="metrics"><div class="mc"><div class="ml">총 지출</div><div class="mv">31만</div><div class="ms">308,213원</div></div><div class="mc"><div class="ml">총 전환(사전예약)</div><div class="mv">356</div></div><div class="mc"><div class="ml">평균 전환(사전예약)당 비용</div><div class="mv">866</div></div><div class="mc"><div class="ml">노출</div><div class="mv">3만</div></div><div class="mc"><div class="ml">운영 소재</div><div class="mv">1개</div><div class="ms">전체 1개</div></div></div><div class="charts-row"><div class="chart-box"><canvas id="bar_4"></canvas></div><div class="chart-box"><canvas id="type_4"></canvas></div><div class="chart-box"><canvas id="plat_4"></canvas></div></div><div class="analysis-grid"><div class="analysis-card"><h4>🎨 소재 유형별 성과</h4><table class="mini-table"><tr><th>유형</th><th>소재수</th><th>지출</th><th>설치</th><th>전환(사전예약)</th></tr><tr><td>영상</td><td class="num">1</td><td class="num">31만</td><td class="num">-</td><td class="num">356</td></tr></table></div><div class="analysis-card"><h4>📱 플랫폼별 성과</h4><table class="mini-table"><tr><th>플랫폼</th><th>소재수</th><th>지출</th><th>설치</th><th>전환(사전예약)</th></tr><tr><td>iOS</td><td class="num">1</td><td class="num">31만</td><td class="num">-</td><td class="num">356</td></tr></table></div></div><h3 class="sec-title">💰 Top 5 소재 (지출 기준)</h3><div class="ct-wrap"><table class="ct"><thead><tr><th class="rank">#</th><th>소재명</th><th>유형</th><th>플랫폼</th><th class="num">지출</th><th class="num">전환(사전예약)</th><th class="num">전환(사전예약)당 비용</th><th class="num">노출</th></tr></thead><tbody><tr><td class="rank"><span class="badge-top badge-1">1</span></td><td class="ad-name" title="한국어_iOS_영상_키비주얼 루핑(낮밤)_세로_260429">한국어_iOS_영상_키비주얼 루핑(낮밤)_세로_260429</td><td><span class="tag tag-vid">영상</span></td><td><span class="tag tag-ios">iOS</span></td><td class="num">31만</td><td class="num">356</td><td class="num">866</td><td class="num">28,938</td></tr></tbody></table></div><h3 class="sec-title">🏆 Best 전환(사전예약)당 비용 소재 (지출 1만원 이상)</h3><div class="ct-wrap"><table class="ct"><thead><tr><th class="rank">#</th><th>소재명</th><th>유형</th><th>플랫폼</th><th class="num">전환(사전예약)당 비용</th><th class="num">지출</th><th class="num">전환(사전예약)</th><th class="num">노출</th></tr></thead><tbody><tr><td class="rank"><span class="badge-top badge-1">1</span></td><td class="ad-name" title="한국어_iOS_영상_키비주얼 루핑(낮밤)_세로_260429">한국어_iOS_영상_키비주얼 루핑(낮밤)_세로_260429</td><td><span class="tag tag-vid">영상</span></td><td><span class="tag tag-ios">iOS</span></td><td class="num">866</td><td class="num">31만</td><td class="num">356</td><td class="num">28,938</td></tr></tbody></table></div><h3 class="sec-title">📊 예산 플랜 코멘트</h3><div class="budget-section"><textarea class="budget-textarea" data-game-idx="4" placeholder="이 게임의 예산 플랜 코멘트를 작성하세요. 입력하면 브라우저에 자동 저장됩니다."></textarea><div class="budget-hint">💾 자동 저장 (이 브라우저에만 보관)</div></div></div><div class="tab-pane" id="pane5"><div class="metrics"><div class="mc"><div class="ml">총 지출</div><div class="mv">0</div><div class="ms">0원</div></div><div class="mc"><div class="ml">노출</div><div class="mv">0</div></div><div class="mc"><div class="ml">운영 소재</div><div class="mv">0개</div><div class="ms">전체 0개</div></div></div><div class="charts-row"><div class="chart-box"><canvas id="bar_5"></canvas></div><div class="chart-box"><canvas id="type_5"></canvas></div><div class="chart-box"><canvas id="plat_5"></canvas></div></div><div class="analysis-grid"><div class="analysis-card"><h4>🎨 소재 유형별 성과</h4><table class="mini-table"><tr><th>유형</th><th>소재수</th><th>지출</th><th>설치</th><th>전환(사전예약)</th></tr></table></div><div class="analysis-card"><h4>📱 플랫폼별 성과</h4><table class="mini-table"><tr><th>플랫폼</th><th>소재수</th><th>지출</th><th>설치</th><th>전환(사전예약)</th></tr></table></div></div><h3 class="sec-title">💰 Top 5 소재 (지출 기준)</h3><div class="no-data">지출 데이터가 있는 소재가 없습니다.</div><h3 class="sec-title">📊 예산 플랜 코멘트</h3><div class="budget-section"><textarea class="budget-textarea" data-game-idx="5" placeholder="이 게임의 예산 플랜 코멘트를 작성하세요. 입력하면 브라우저에 자동 저장됩니다."></textarea><div class="budget-hint">💾 자동 저장 (이 브라우저에만 보관)</div></div></div></div>
+<div class="ft">
+  SuperPlanet 광고 소재 성과 보고서 | 2026.04.20 (월) ~ 2026.05.03 (일) | W17-W18<br>
+  Generated 2026-05-04 10:18
+</div>
+<script>
+
+const DATA = {"0": {"top_names": ["일본어_iOS_영상_스라아_세로_251201", "모든언어_iOS_영상_스토어캡쳐_세로_251201"], "top_spends": [1975837, 826197], "type_labels": ["영상"], "type_spends": [2802034], "plat_labels": ["iOS"], "plat_spends": [2802034]}, "1": {"top_names": ["루나폼포_05_이니드"], "top_spends": [184881], "type_labels": ["이미지"], "type_spends": [184881], "plat_labels": ["AOS"], "plat_spends": [184881]}, "2": {"top_names": ["모든언어_iOS_이미지_앱아이콘_정방_260424", "모든언어_AOS_영상_로봇TTS_세로_260309", "모든언어_AOS_이미지_앱아이콘_정방_260424", "모든언어_iOS_영상_TTS 페이크_세로_251224", "모든언어_AOS_영상_TTS페이크_세로_251224"], "top_spends": [2835898, 2124094, 1619647, 1354730, 998371], "type_labels": ["이미지", "영상"], "type_spends": [5138258, 5652260], "plat_labels": ["AOS", "iOS"], "plat_spends": [5113057, 5677461]}, "3": {"top_names": ["TTS 로봇 세로형"], "top_spends": [214233], "type_labels": ["영상"], "type_spends": [214233], "plat_labels": ["AOS"], "plat_spends": [214233]}, "4": {"top_names": ["한국어_iOS_영상_키비주얼 루핑(낮밤)_세로_2604"], "top_spends": [308213], "type_labels": ["영상"], "type_spends": [308213], "plat_labels": ["iOS"], "plat_spends": [308213]}, "5": {"top_names": [], "top_spends": [], "type_labels": [], "type_spends": [], "plat_labels": [], "plat_spends": []}};
+const typeColors = ['#1565c0','#c62828','#f57f17','#616161','#4527a0'];
+const platColors = ['#2e7d32','#e65100','#616161','#1565c0'];
+const barColor = 'rgba(66,133,244,0.75)';
+
+function fmtKRW(v) {
+  if (v >= 100000000) return (v/100000000).toFixed(1) + '억';
+  if (v >= 10000) return (v/10000).toLocaleString() + '만';
+  return v.toLocaleString();
+}
+
+function showTab(idx) {
+  document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+  document.querySelectorAll('.tab-pane').forEach(p => p.classList.remove('active'));
+  document.getElementById('tab' + idx).classList.add('active');
+  document.getElementById('pane' + idx).classList.add('active');
+}
+
+for (let i = 0; i < 6; i++) {
+  const d = DATA[String(i)];
+  if (!d) continue;
+
+  const barEl = document.getElementById('bar_' + i);
+  if (barEl && d.top_names.length > 0) {
+    new Chart(barEl, {
+      type: 'bar',
+      data: { labels: d.top_names, datasets: [{ data: d.top_spends, backgroundColor: barColor, borderRadius: 4 }] },
+      options: {
+        indexAxis: 'y', responsive: true, maintainAspectRatio: false,
+        plugins: { title: { display: true, text: 'Top 10 소재 (지출)', font: { size: 12 } }, legend: { display: false },
+          tooltip: { callbacks: { label: function(ctx) { return fmtKRW(ctx.raw) + '원'; } } } },
+        scales: { x: { ticks: { callback: function(v) { return fmtKRW(v); } } }, y: { ticks: { font: { size: 10 } } } }
+      }
+    });
+  }
+
+  const typeEl = document.getElementById('type_' + i);
+  if (typeEl && d.type_labels.length > 0) {
+    new Chart(typeEl, {
+      type: 'doughnut',
+      data: { labels: d.type_labels, datasets: [{ data: d.type_spends, backgroundColor: typeColors.slice(0, d.type_labels.length) }] },
+      options: {
+        responsive: true, maintainAspectRatio: false,
+        plugins: { title: { display: true, text: '소재 유형별 지출', font: { size: 12 } }, legend: { position: 'bottom', labels: { font: { size: 11 } } },
+          tooltip: { callbacks: { label: function(ctx) { const t = ctx.dataset.data.reduce((a,b) => a+b, 0); return ctx.label + ': ' + fmtKRW(ctx.raw) + '원 (' + (t>0?((ctx.raw/t)*100).toFixed(1):0) + '%)'; } } } }
+      }
+    });
+  }
+
+  const platEl = document.getElementById('plat_' + i);
+  if (platEl && d.plat_labels.length > 0) {
+    new Chart(platEl, {
+      type: 'doughnut',
+      data: { labels: d.plat_labels, datasets: [{ data: d.plat_spends, backgroundColor: platColors.slice(0, d.plat_labels.length) }] },
+      options: {
+        responsive: true, maintainAspectRatio: false,
+        plugins: { title: { display: true, text: '플랫폼별 지출', font: { size: 12 } }, legend: { position: 'bottom', labels: { font: { size: 11 } } },
+          tooltip: { callbacks: { label: function(ctx) { const t = ctx.dataset.data.reduce((a,b) => a+b, 0); return ctx.label + ': ' + fmtKRW(ctx.raw) + '원 (' + (t>0?((ctx.raw/t)*100).toFixed(1):0) + '%)'; } } } }
+      }
+    });
+  }
+}
+
+// ─── Budget comment textarea: localStorage 자동 저장/복원 ───
+const REPORT_ID = "SuperPlanet_Meta_Google_성과보고서_260420-260503";
+document.querySelectorAll('.budget-textarea').forEach(function(ta) {
+  const key = 'budget_comment::' + REPORT_ID + '::' + ta.dataset.gameIdx;
+  try {
+    const saved = localStorage.getItem(key);
+    if (saved !== null) ta.value = saved;
+  } catch (e) {}
+  ta.addEventListener('input', function() {
+    try { localStorage.setItem(key, ta.value); } catch (e) {}
+  });
+});
+
+</script>
+</body>
+</html>
