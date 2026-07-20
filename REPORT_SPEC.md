@@ -111,3 +111,17 @@
 | 소재명 합산 | 같은 소재를 여러 캠페인에서 운영해도 통합 성과 파악 |
 | 번호/해상도 제거 | Google Ads UI 정렬번호·파일 규격 노이즈 제거 |
 | Slack 2단 구조 | 채널 청결도 — 메인은 하이라이트만, 상세는 스레드 |
+
+## 9. 발행 후 검증 (GitHub Pages 배포 확인)
+
+Slack 발송 전, master에 푸시한 커밋의 GitHub Pages 배포가 실제로 완료되었는지 확인한다. HTML 파일이 저장소에 존재한다고 해서 `wo0o096.github.io/...` 링크가 즉시 살아있는 것은 아니다 — 배포 자체가 멈추는 경우가 있다.
+
+1. 리포트 커밋 푸시 직후, 해당 커밋 SHA로 트리거된 `pages build and deployment` 워크플로 실행(run)을 조회한다 (`actions_list` method=`list_workflow_runs`, 최신 항목의 `head_sha`가 방금 커밋과 일치하는지 확인).
+2. 짧게(대략 30~60초) 기다린 뒤 `actions_get` method=`get_workflow_run`으로 상태를 재확인한다.
+   - `completed` + `conclusion: success` → 정상. Slack 발송 진행.
+   - 계속 `queued`/`in_progress`이고 `jobs`의 `runner_id`가 `0`(할당 안 됨)인 채로 정체 — GitHub Pages 빌드 큐 지연/스톨 가능성. 아래 3번 시도.
+3. 스톨 복구 시도 (순서대로, 각 시도 후 재확인):
+   - `actions_run_trigger` method=`cancel_workflow_run` → method=`rerun_workflow_run`.
+   - 그래도 안 풀리면 빈 커밋(`git commit --allow-empty`)으로 새 배포를 트리거.
+4. 위 시도 후에도 몇 분 내 `success`로 전환되지 않으면: **Slack 발송을 보류하지 말고, 배포 상태를 명시한 채로 발송**하되 GitHub Pages 링크 대신/추가로 저장소 파일 링크(`github.com/.../blob/master/<filename>`)를 임시로 첨부하거나, "링크가 아직 반영되지 않을 수 있음" 경고를 메인 메시지에 덧붙인다. 이후 배포가 완료되면 같은 스레드에 정상 링크를 후속 댓글로 남긴다.
+5. 이 저장소는 `github.io` 도메인이 샌드박스 프록시에서 차단되어 있어(WebFetch/curl 403) 링크를 직접 열어 검증할 수 없다 — Actions API 상태만으로 판단한다.
