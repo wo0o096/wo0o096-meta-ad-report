@@ -1,7 +1,7 @@
 # SuperPlanet 주간 소재 성과보고서 — 생성 스펙
 
 > 주간 리포트 자동화(매주 월요일)가 이 문서를 기준으로 데이터 집계·HTML 생성·Slack 발송을 수행한다.
-> 이 문서와 루틴 지시문이 충돌하면 **이 문서가 우선**한다. (최종 수정: 2026-08-24)
+> 이 문서와 루틴 지시문이 충돌하면 **이 문서가 우선**한다. (최종 수정: 2026-09-29)
 
 ## 0. 제외 게임 (excluded_games)
 
@@ -19,7 +19,7 @@
 
 | 채널 | 소스 | 비고 |
 |---|---|---|
-| Google | 스프레드시트 `구글 애즈 소재분석 raw 정제작업`의 `raw_{게임}` 시트 | 매주 월 5-6시 KST Google Ads Script가 갱신. §0 제외 게임의 시트는 조회하지 않는다. 탭 순서·용량 제약은 §10 참고. |
+| Google | Drive `report_export/report_export_{게임}.csv` (§11) | 원본은 스프레드시트 `구글 애즈 소재분석 raw 정제작업`의 `raw_{게임}` 시트(매주 월 5-6시 KST Google Ads Script 갱신). 월 07시 KST Apps Script가 소재 단위로 합쳐 CSV로 내보낸다. **raw 시트를 직접 읽지 않는다** (§10). |
 | Meta | Singular (source=Facebook, 최근 14일~어제) | dimensions: app, os, campaign, adn_creative_name / metrics: cost, impressions, installs, Total Revenue LTV, Total ROI LTV. §0 제외 게임은 쿼리 대상에서 제외한다. |
 
 - 기간: 어제까지의 최근 14일 (월~일 2주), 금액은 KRW.
@@ -166,7 +166,34 @@ Slack 발송 전, master에 푸시한 커밋의 GitHub Pages 배포가 실제로
 4. 권장 탭 순서: `Pivot` → 보고 대상 `raw_*` 전부(갓슬레이어·이블헌터·소마스·언더다크·던전견문록) → `_설정_영상링크` → `_마스터_영상링크`(ACTIVE만) → 나머지 비보고 대상 탭 전부.
 5. 루틴은 `_마스터_영상링크_보관용`을 **조회하지 않는다** (소재명↔영상 URL 매핑이 필요하면 `_마스터_영상링크`의 ACTIVE 행만 사용).
 
+> **2026-09-29 변경**: Drive 커넥터의 `read_file_content`가 대용량 스프레드시트를 시트당 2~3행 샘플로만 돌려주도록 바뀌어, 탭 순서와 무관하게 raw 탭 전체를 읽을 수 없게 되었다. CSV 내보내기는 첫 탭(Pivot)만, xlsx 내보내기는 타임아웃(커넥터 세션 끊김). 따라서 Google 데이터는 §11의 CSV 내보내기로만 수집한다. 아래 규칙은 스프레드시트 관리용으로 유지한다.
+
 ### 점검 체크리스트 (데이터 수집 실패 시)
 - 대상 `raw_*` 탭이 `_마스터_영상링크*` 계열 탭보다 **앞**에 있는가?
 - `_마스터_영상링크`에 `ARCHIVED` 행이 다시 쌓이지 않았는가?
 - `_마스터_영상링크`의 `ACTIVE` 행이 실수로 보관용으로 넘어가 VLOOKUP이 깨지지 않았는가?
+
+## 11. Google 데이터 수집 — Apps Script CSV 내보내기 (2026-09-29 추가)
+
+### 구성
+- 스크립트: `apps_script/export_raw_for_report.gs` — 스프레드시트에 바인딩된 Apps Script. `installTrigger()`로 매주 월 07시 KST 자동 실행 (Google Ads Script 갱신 5-6시 이후).
+- 출력: 내 드라이브 `report_export/report_export_{게임}.csv` — 게임: 갓슬레이어, 이블헌터, 소마스, 언더다크, 던전견문록, 위키드. 매주 같은 파일을 덮어쓴다(파일 ID 불변).
+- 스크립트가 §2 규칙(시각 소재만, 소재명 정제)과 §3 합산(소재명 × OS × 유형 × 사전예약 여부)을 수행한다. 규칙을 바꾸면 스크립트도 함께 수정한다.
+
+### CSV 컬럼
+| 컬럼 | 의미 |
+|---|---|
+| `os` | 캠페인명 `_iOS_`/`_AOS_` → iOS / AOS, 없으면 기타 |
+| `type` | 영상 / 이미지 |
+| `prereg` | 캠페인명에 "사전" 포함 시 Y |
+| `creative` | 정제된 소재명 |
+| `cost`, `impressions`, `installs`, `conv_value`, `conversions` | 합산값 (KRW, conv_value=전환 가치, conversions=전환) |
+| `rows` | 합산된 raw 행 수 |
+
+- 비용 0 행은 제외되어 있다. 노이즈 필터(≤1,000원)와 §4 임계값은 루틴에서 적용한다.
+
+### 루틴 수집 절차
+1. `search_files`로 `title = 'report_export_{게임}.csv'` 파일을 찾는다.
+2. `get_file_metadata`의 수정 시각이 **실행일(월요일 KST) 07시 이후**인지 확인한다. 아니면 stale → 알림 후 중단.
+3. `download_file_content`(exportMimeType 없이)로 받은 base64를 디코딩해 CSV로 파싱한다.
+4. 파일이 없거나 헤더만 있는 경우: 위키드처럼 Google 집행이 없는 게임이면 Google 채널 `status="empty"`, 그 외 주요 게임이 비어 있으면 알림 후 중단.
